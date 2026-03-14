@@ -68,7 +68,8 @@ def show_menu():
     print("2. メモ一覧を表示")
     print("3. メモを削除")
     print("4. 全メモ削除")
-    print("5. 終了")
+    print("5. メモを検索")
+    print("6. 終了")
     print("=============\n")
 
 # メモを追加する関数
@@ -182,6 +183,40 @@ def clear_memos():
         print("削除をキャンセルしました。")
 
 
+# メモを検索する関数
+def search_memos():
+    """キーワードを含むメモを検索して表示する関数"""
+    # ユーザーから検索キーワードを入力してもらう
+    keyword = input("検索キーワードを入力してください: ")
+
+    # 空のキーワードは検索しない
+    if keyword.strip() == "":
+        print("キーワードを入力してください。")
+        return
+
+    # キーワードを含むメモだけを集めるリスト（最初は空）
+    results = []
+
+    # メモを1件ずつ確認して、キーワードが含まれているものを results に追加する
+    for memo in memos:
+        # in を使うと、文字列の中に別の文字列が含まれているか調べられる
+        # 例: "買い物" in "牛乳を買い物リストに追加" → True
+        if keyword in memo["text"]:
+            results.append(memo)
+
+    # 検索結果を表示する
+    if len(results) == 0:
+        # 1件もヒットしなかった場合
+        print(f"「{keyword}」に一致するメモは見つかりませんでした。")
+    else:
+        # ヒットした件数を表示してから、内容を表示する
+        print(f"\n「{keyword}」の検索結果: {len(results)} 件")
+        print("--- 検索結果 ---")
+        for i, memo in enumerate(results, start=1):
+            print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
+        print("----------------\n")
+
+
 # メイン処理
 def main():
     """プログラムのメイン処理"""
@@ -196,7 +231,7 @@ def main():
         show_menu()
         
         # ユーザーからの入力を待つ
-        choice = input("選択してください (1-5): ")
+        choice = input("選択してください (1-6): ")
 
         # 選択に応じて処理を分岐
         if choice == "1":
@@ -212,12 +247,15 @@ def main():
             # 4が選ばれた場合：全メモ削除
             clear_memos()
         elif choice == "5":
-            # 5が選ばれた場合：終了
+            # 5が選ばれた場合：メモを検索
+            search_memos()
+        elif choice == "6":
+            # 6が選ばれた場合：終了
             print("メモ帳を終了します。")
             break
         else:
-            # 1〜5以外が入力された場合
-            print("無効な選択です。1, 2, 3, 4, 5のいずれかを入力してください。")
+            # 1〜6以外が入力された場合
+            print("無効な選択です。1, 2, 3, 4, 5, 6のいずれかを入力してください。")
 
 # プログラムの実行開始点
 # このファイルが直接実行された場合のみ、main()関数を呼び出す
