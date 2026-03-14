@@ -1,6 +1,23 @@
 # メモ帳アプリケーション
 # このプログラムは、コマンドラインでメモを管理するシンプルなアプリです
 
+# .env ファイルの内容を読み込むためのライブラリを使う
+import os
+
+from dotenv import load_dotenv
+
+
+# .env ファイルを読み込んで、環境変数として使えるようにする
+load_dotenv()
+
+# APP_NAME は起動時の表示に使う
+app_name = os.getenv("APP_NAME", "メモ帳アプリ")
+
+# SECRET_WORD も読み込めるようにしておく
+# ただし、秘密の値なので画面には表示しない
+secret_word = os.getenv("SECRET_WORD")
+
+
 # メモを保存するためのリスト（空のリストで初期化）
 memos = []
 
@@ -114,7 +131,8 @@ def delete_all_memos():
 # メイン処理
 def main():
     """プログラムのメイン処理"""
-    print("メモ帳アプリケーションを起動しました。")
+    # .env から読み込んだアプリ名を、起動時に表示する
+    print(f"{app_name} を起動しました。")
     
     # 無限ループ（ユーザーが終了を選ぶまで繰り返す）
     while True:
