@@ -91,6 +91,28 @@ def test_save_and_load_multiple_memos(tmp_path):
     assert app.memos[2]["created_at"] == "2026-01-03 12:00:00"
 
 
+def test_load_memos_with_broken_json(tmp_path):
+    """memo.json が壊れていても、アプリが落ちずに空のリストになるかを確認するテスト"""
+
+    # --- 準備 ---
+    # 壊れた JSON を一時ファイルに書き込む
+    # 正しい JSON は '[{"text": "..."}]' のような形だが、ここでは途中で切れた内容にする
+    broken_file = tmp_path / "memo.json"
+    broken_file.write_text("{ これは壊れた JSON です ", encoding="utf-8")
+
+    # app.py が使うファイルパスを、壊れたファイルに差し替える
+    app.memo_file = str(broken_file)
+    app.memos.clear()
+
+    # --- 実行 ---
+    # 壊れたファイルを読み込もうとする（エラーで落ちないはず）
+    app.load_memos()
+
+    # --- 確認 ---
+    # 読み込みに失敗しても、メモは空のリストのままのはず
+    assert len(app.memos) == 0
+
+
 def test_load_memos_when_file_does_not_exist(tmp_path):
     """memo.json がない状態で load_memos() を呼んでも、エラーにならないことを確認するテスト"""
 

@@ -39,8 +39,14 @@ def load_memos():
     if os.path.exists(memo_file):
         # JSON ファイルを開いて、中身を Python のリストに変換する
         with open(memo_file, "r", encoding="utf-8") as file:
-            # json.load() は JSON ファイルを読み込んでリストや辞書に変換する関数
-            data = json.load(file)
+            try:
+                # json.load() は JSON ファイルを読み込んでリストや辞書に変換する関数
+                data = json.load(file)
+            except json.JSONDecodeError:
+                # ファイルの中身が壊れていて JSON として読めない場合
+                # エラーを表示して、メモを空のまま起動する
+                print("memo.json が壊れているため、メモを読み込めませんでした。")
+                return
             # 読み込んだデータをメモリスト（memos）に追加する
             for item in data:
                 # 古い形式（文字列）のメモが残っている場合、辞書形式に変換して読み込む
