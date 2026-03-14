@@ -69,7 +69,8 @@ def show_menu():
     print("3. メモを削除")
     print("4. 全メモ削除")
     print("5. メモを検索")
-    print("6. 終了")
+    print("6. メモを編集")
+    print("7. 終了")
     print("=============\n")
 
 # メモを追加する関数
@@ -214,6 +215,62 @@ def clear_memos():
         print("削除をキャンセルしました。")
 
 
+# メモを編集する関数
+def edit_memo():
+    """メモの本文を編集する関数"""
+    # メモが1つもない場合
+    if len(memos) == 0:
+        print("編集するメモがありません。")
+        return
+
+    # メモ一覧を表示して、どのメモを編集するか選んでもらう
+    print("\n--- 編集するメモを選んでください ---")
+    # 各メモを番号と一緒に表示
+    for i, memo in enumerate(memos, start=1):
+        print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
+    print("------------------------------------\n")
+
+    # 正しい番号が入力されるまで繰り返す
+    while True:
+        # ユーザーから編集したいメモの番号を入力してもらう
+        number_input = input("編集するメモの番号を入力してください: ")
+
+        # 入力が数字かどうかを確認
+        if not number_input.isdigit():
+            print("数字を入力してください。")
+            continue
+
+        # 文字列を整数に変換
+        number = int(number_input)
+
+        # 番号が有効な範囲内かどうかを確認
+        if number < 1 or number > len(memos):
+            print(f"1から{len(memos)}までの番号を入力してください。")
+            continue
+
+        # 有効な番号が入力された場合、ループを抜ける
+        break
+
+    # 選ばれたメモを取り出す（インデックスは0始まりなので1を引く）
+    memo = memos[number - 1]
+
+    # 現在の内容を表示してから、新しい内容を入力してもらう
+    print(f"現在の内容: {memo['text']}")
+    new_text = input("新しい内容を入力してください: ")
+
+    # 空の内容では更新しない
+    if new_text.strip() == "":
+        print("内容が空のため、編集をキャンセルしました。")
+        return
+
+    # text を新しい内容に書き換える（created_at はそのまま残す）
+    memo["text"] = new_text
+
+    # 更新した内容をファイルに保存する
+    save_memos()
+    print("メモを更新しました！")
+
+
 # メモを検索する関数
 def search_memos():
     """キーワードを含むメモを検索して表示する関数"""
@@ -267,7 +324,7 @@ def main():
         show_menu()
         
         # ユーザーからの入力を待つ
-        choice = input("選択してください (1-6): ")
+        choice = input("選択してください (1-7): ")
 
         # 選択に応じて処理を分岐
         if choice == "1":
@@ -286,12 +343,15 @@ def main():
             # 5が選ばれた場合：メモを検索
             search_memos()
         elif choice == "6":
-            # 6が選ばれた場合：終了
+            # 6が選ばれた場合：メモを編集
+            edit_memo()
+        elif choice == "7":
+            # 7が選ばれた場合：終了
             print("メモ帳を終了します。")
             break
         else:
-            # 1〜6以外が入力された場合
-            print("無効な選択です。1, 2, 3, 4, 5, 6のいずれかを入力してください。")
+            # 1〜7以外が入力された場合
+            print("無効な選択です。1から7のいずれかを入力してください。")
 
 # プログラムの実行開始点
 # このファイルが直接実行された場合のみ、main()関数を呼び出す
