@@ -7,6 +7,9 @@ import os
 # JSON ファイルを読み書きするためのライブラリを使う
 import json
 
+# 現在日時を取得するためのライブラリを使う
+from datetime import datetime
+
 from dotenv import load_dotenv
 
 
@@ -39,7 +42,12 @@ def load_memos():
             # json.load() は JSON ファイルを読み込んでリストや辞書に変換する関数
             data = json.load(file)
             # 読み込んだデータをメモリスト（memos）に追加する
-            memos.extend(data)
+            for item in data:
+                # 古い形式（文字列）のメモが残っている場合、辞書形式に変換して読み込む
+                if isinstance(item, str):
+                    memos.append({"text": item, "created_at": "不明"})
+                else:
+                    memos.append(item)
 
 # メモを memo.json に保存し直す関数
 def save_memos():
@@ -71,8 +79,16 @@ def add_memo():
     
     # 入力されたメモが空でない場合のみ追加
     if memo_text.strip() != "":
-        # メモリストに追加
-        memos.append(memo_text)
+        # メモを辞書形式で作る
+        # 辞書とは、キーと値のペアでデータを管理するPythonのデータ構造
+        # 例: {"text": "買い物", "created_at": "2024-01-01 12:00:00"}
+        memo = {
+            "text": memo_text,
+            # datetime.now() で現在日時を取得し、strftime() で見やすい形式の文字列に変換する
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        # メモリストに辞書を追加
+        memos.append(memo)
         # JSON はファイル全体を書き直す必要があるため、save_memos() で保存する
         save_memos()
         print("メモを追加しました！")
@@ -92,7 +108,8 @@ def show_memos():
         print("--- メモ一覧 ---")
         # 各メモを番号と一緒に表示
         for i, memo in enumerate(memos, start=1):
-            print(f"{i}. {memo}")
+            # memo は辞書なので、キーを使って値を取り出す
+            print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
         print("----------------\n")
 
 # メモを削除する関数
@@ -107,7 +124,8 @@ def delete_memo():
     print("\n--- 削除するメモを選んでください ---")
     # 各メモを番号と一緒に表示
     for i, memo in enumerate(memos, start=1):
-        print(f"{i}. {memo}")
+        # memo は辞書なので、キーを使って値を取り出す
+        print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
     print("------------------------------------\n")
     
     # 正しい番号が入力されるまで繰り返す
@@ -137,7 +155,7 @@ def delete_memo():
         deleted_memo = memos.pop(number - 1)
         # 削除後の状態を、そのままファイルに保存し直す
         save_memos()
-        print(f"メモ「{deleted_memo}」を削除しました。")
+        print(f"メモ「{deleted_memo['text']}」を削除しました。")
         # 正しい番号が入力されたので、ループを抜ける
         break
 
