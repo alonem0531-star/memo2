@@ -215,9 +215,25 @@ def clear_memos():
         print("削除をキャンセルしました。")
 
 
-# メモを編集する関数
-def edit_memo():
-    """メモの本文を編集する関数"""
+# 指定した位置のメモを更新する関数
+def edit_memo(memos, index, new_text):
+    """memos の index 番目のメモを new_text に書き換える関数。
+    成功したら True、index が不正なら False を返す。"""
+
+    # index が有効な範囲内かどうかを確認する
+    # リストのインデックスは 0 から len(memos)-1 まで有効
+    if index < 0 or index >= len(memos):
+        # 不正な index の場合は何も変更せず False を返す
+        return False
+
+    # text を新しい内容に書き換える（created_at はそのまま残す）
+    memos[index]["text"] = new_text
+    return True
+
+
+# メモを編集する関数（CLI操作を担当）
+def handle_edit():
+    """編集するメモを選んでもらい、内容を書き換える関数"""
     # メモが1つもない場合
     if len(memos) == 0:
         print("編集するメモがありません。")
@@ -263,8 +279,8 @@ def edit_memo():
         print("内容が空のため、編集をキャンセルしました。")
         return
 
-    # text を新しい内容に書き換える（created_at はそのまま残す）
-    memo["text"] = new_text
+    # edit_memo() を使ってメモを更新する（number - 1 でインデックスに変換）
+    edit_memo(memos, number - 1, new_text)
 
     # 更新した内容をファイルに保存する
     save_memos()
@@ -353,7 +369,7 @@ def main():
             handle_search()
         elif choice == "6":
             # 6が選ばれた場合：メモを編集
-            edit_memo()
+            handle_edit()
         elif choice == "7":
             # 7が選ばれた場合：終了
             print("メモ帳を終了します。")
