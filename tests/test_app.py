@@ -276,6 +276,30 @@ def test_edit_memo_returns_false_for_invalid_index():
     assert memos[0]["text"] == "牛乳を買う"
 
 
+def test_show_help_prints_content(capsys):
+    """show_help() を呼んだとき、何らかの内容が表示されるかを確認するテスト"""
+
+    # capsys は pytest が用意する特別な引数で、
+    # print() で出力された内容をテストの中で受け取れるようにしてくれる
+
+    # --- 実行 ---
+    app.show_help()
+
+    # --- 確認 ---
+    # capsys.readouterr() で、実行中に print() された内容を取得する
+    # out には標準出力（画面に表示された文字列）が入る
+    out = capsys.readouterr().out
+
+    # 何も表示されていないのはおかしいので、空でないことを確認する
+    assert out.strip() != ""
+
+    # 各機能の名前がヘルプに含まれているかを確認する
+    assert "追加" in out
+    assert "削除" in out
+    assert "検索" in out
+    assert "編集" in out
+
+
 def test_parse_memo_number_valid():
     """有効な番号の文字列を渡したとき、整数に変換されて返るかを確認するテスト"""
 
