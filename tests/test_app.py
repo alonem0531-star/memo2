@@ -52,6 +52,62 @@ def test_save_and_load_memos(tmp_path):
     assert app.memos[0]["created_at"] == "2026-01-01 12:00:00"
 
 
+def test_save_and_load_multiple_memos(tmp_path):
+    """複数のメモを保存して、すべて正しく読み込まれるかを確認するテスト"""
+
+    # --- 準備 ---
+    # 一時ファイルに差し替えて、本物の memo.json を書き換えないようにする
+    app.memo_file = str(tmp_path / "memo.json")
+    app.memos.clear()
+
+    # --- テストデータの準備 ---
+    # 複数のメモを用意する
+    app.memos.append({"text": "牛乳を買う",       "created_at": "2026-01-01 10:00:00"})
+    app.memos.append({"text": "図書館に本を返す", "created_at": "2026-01-02 11:00:00"})
+    app.memos.append({"text": "運動する",         "created_at": "2026-01-03 12:00:00"})
+
+    # --- 実行 ---
+    # 3件まとめて保存する
+    app.save_memos()
+
+    # いったん空にしてからファイルを読み込む
+    app.memos.clear()
+    app.load_memos()
+
+    # --- 確認 ---
+    # 3件すべて読み込まれているはず
+    assert len(app.memos) == 3
+
+    # 1件目：text と created_at の両方を確認する
+    assert app.memos[0]["text"] == "牛乳を買う"
+    assert app.memos[0]["created_at"] == "2026-01-01 10:00:00"
+
+    # 2件目
+    assert app.memos[1]["text"] == "図書館に本を返す"
+    assert app.memos[1]["created_at"] == "2026-01-02 11:00:00"
+
+    # 3件目
+    assert app.memos[2]["text"] == "運動する"
+    assert app.memos[2]["created_at"] == "2026-01-03 12:00:00"
+
+
+def test_load_memos_when_file_does_not_exist(tmp_path):
+    """memo.json がない状態で load_memos() を呼んでも、エラーにならないことを確認するテスト"""
+
+    # --- 準備 ---
+    # 存在しないファイルパスを指定する（tmp_path にはまだファイルを作っていない）
+    app.memo_file = str(tmp_path / "memo.json")
+    app.memos.clear()
+
+    # --- 実行 ---
+    # ファイルがなくても load_memos() がエラーなく終わるはず
+    app.load_memos()
+
+    # --- 確認 ---
+    # ファイルがないのでメモは0件のまま
+    assert len(app.memos) == 0
+
+
 def test_search_memos_returns_matching():
     """キーワードに一致するメモだけが返るかを確認するテスト"""
 
