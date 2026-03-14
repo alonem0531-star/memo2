@@ -143,7 +143,7 @@ def delete_memo():
         break
 
 # 全メモを削除する関数
-def delete_all_memos():
+def clear_memos():
     """保存されているメモをすべて削除する関数"""
     # メモが1つもない場合は何もしない
     if len(memos) == 0:
@@ -193,7 +193,7 @@ def main():
             delete_memo()
         elif choice == "4":
             # 4が選ばれた場合：全メモ削除
-            delete_all_memos()
+            clear_memos()
         elif choice == "5":
             # 5が選ばれた場合：終了
             print("メモ帳を終了します。")
