@@ -92,3 +92,50 @@ def test_search_memos_returns_empty_when_no_match():
     # --- 確認 ---
     # 一致するメモがないので、空のリストが返るはず
     assert results == []
+
+
+def test_delete_memo_removes_correct_memo():
+    """正しいインデックスを指定したとき、そのメモが削除されるかを確認するテスト"""
+
+    # --- テストデータの準備 ---
+    memos = [
+        {"text": "牛乳を買う",       "created_at": "2026-01-01 10:00:00"},
+        {"text": "図書館に本を返す", "created_at": "2026-01-02 10:00:00"},
+        {"text": "運動する",         "created_at": "2026-01-03 10:00:00"},
+    ]
+
+    # --- 実行 ---
+    # インデックス 1（「図書館に本を返す」）を削除する
+    deleted = app.delete_memo(memos, 1)
+
+    # --- 確認 ---
+    # 削除後はメモが2件になるはず
+    assert len(memos) == 2
+
+    # 戻り値は削除されたメモ自身のはず
+    assert deleted["text"] == "図書館に本を返す"
+
+    # 残ったメモに削除したものが含まれていないことを確認する
+    texts = [memo["text"] for memo in memos]
+    assert "図書館に本を返す" not in texts
+
+
+def test_delete_memo_returns_none_for_invalid_index():
+    """不正なインデックスを指定したとき、None が返りリストが変わらないことを確認するテスト"""
+
+    # --- テストデータの準備 ---
+    memos = [
+        {"text": "牛乳を買う",       "created_at": "2026-01-01 10:00:00"},
+        {"text": "図書館に本を返す", "created_at": "2026-01-02 10:00:00"},
+    ]
+
+    # --- 実行 ---
+    # 存在しないインデックス（範囲外）を指定する
+    result = app.delete_memo(memos, 99)
+
+    # --- 確認 ---
+    # 不正なインデックスなので None が返るはず
+    assert result is None
+
+    # リストの件数は変わっていないはず
+    assert len(memos) == 2

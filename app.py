@@ -145,14 +145,29 @@ def show_memos():
             print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
         print("----------------\n")
 
-# メモを削除する関数
-def delete_memo():
-    """メモを削除する関数"""
+# 指定した位置のメモを削除する関数
+def delete_memo(memos, index):
+    """memos の index 番目のメモを削除する関数。
+    成功したら削除したメモを返す、index が不正なら None を返す。"""
+
+    # index が有効な範囲内かどうかを確認する
+    # リストのインデックスは 0 から len(memos)-1 まで有効
+    if index < 0 or index >= len(memos):
+        # 不正な index の場合は何も変更せず None を返す
+        return None
+
+    # pop() はリストから要素を取り出して削除するメソッド
+    return memos.pop(index)
+
+
+# メモを削除する関数（CLI操作を担当）
+def handle_delete():
+    """削除するメモを選んでもらい、削除する関数"""
     # メモが1つもない場合
     if len(memos) == 0:
         print("削除するメモがありません。")
         return
-    
+
     # メモ一覧を表示して、どのメモを削除するか選んでもらう
     print("\n--- 削除するメモを選んでください ---")
     # 各メモを番号と一緒に表示
@@ -160,32 +175,32 @@ def delete_memo():
         # memo は辞書なので、キーを使って値を取り出す
         print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
     print("------------------------------------\n")
-    
+
     # 正しい番号が入力されるまで繰り返す
     while True:
         # ユーザーから削除したいメモの番号を入力してもらう
         number_input = input("削除するメモの番号を入力してください: ")
-        
+
         # 入力が数字かどうかを確認
         # isdigit()は文字列が数字のみで構成されているかチェックする関数
         if not number_input.isdigit():
             # 数字でない場合、再入力を促す
             print("数字を入力してください。")
             continue
-        
+
         # 文字列を整数に変換
         number = int(number_input)
-        
+
         # 番号が有効な範囲内かどうかを確認
         # 番号は1以上、メモの数以下でなければならない
         if number < 1 or number > len(memos):
             # 範囲外の番号の場合、再入力を促す
             print(f"1から{len(memos)}までの番号を入力してください。")
             continue
-        
+
         # 有効な番号が入力された場合
-        # リストのインデックスは0から始まるので、番号から1を引く
-        deleted_memo = memos.pop(number - 1)
+        # delete_memo() を使ってメモを削除する（number - 1 でインデックスに変換）
+        deleted_memo = delete_memo(memos, number - 1)
         # 削除後の状態を、そのままファイルに保存し直す
         save_memos()
         print(f"メモ「{deleted_memo['text']}」を削除しました。")
@@ -360,7 +375,7 @@ def main():
             show_memos()
         elif choice == "3":
             # 3が選ばれた場合：メモを削除
-            delete_memo()
+            handle_delete()
         elif choice == "4":
             # 4が選ばれた場合：全メモ削除
             clear_memos()
