@@ -139,3 +139,60 @@ def test_delete_memo_returns_none_for_invalid_index():
 
     # リストの件数は変わっていないはず
     assert len(memos) == 2
+
+
+def test_edit_memo_updates_text():
+    """正しいインデックスを指定したとき、text が更新されるかを確認するテスト"""
+
+    # --- テストデータの準備 ---
+    memos = [
+        {"text": "牛乳を買う",       "created_at": "2026-01-01 10:00:00"},
+        {"text": "図書館に本を返す", "created_at": "2026-01-02 10:00:00"},
+    ]
+
+    # --- 実行 ---
+    # インデックス 0（「牛乳を買う」）を新しい内容に書き換える
+    result = app.edit_memo(memos, 0, "卵も買う")
+
+    # --- 確認 ---
+    # 成功したので True が返るはず
+    assert result is True
+
+    # text が新しい内容に更新されているはず
+    assert memos[0]["text"] == "卵も買う"
+
+
+def test_edit_memo_does_not_change_created_at():
+    """text を更新しても、created_at が変わらないことを確認するテスト"""
+
+    # --- テストデータの準備 ---
+    memos = [
+        {"text": "牛乳を買う", "created_at": "2026-01-01 10:00:00"},
+    ]
+
+    # --- 実行 ---
+    app.edit_memo(memos, 0, "卵も買う")
+
+    # --- 確認 ---
+    # created_at は編集前のまま変わっていないはず
+    assert memos[0]["created_at"] == "2026-01-01 10:00:00"
+
+
+def test_edit_memo_returns_false_for_invalid_index():
+    """不正なインデックスを指定したとき、False が返りリストが変わらないことを確認するテスト"""
+
+    # --- テストデータの準備 ---
+    memos = [
+        {"text": "牛乳を買う", "created_at": "2026-01-01 10:00:00"},
+    ]
+
+    # --- 実行 ---
+    # 存在しないインデックス（範囲外）を指定する
+    result = app.edit_memo(memos, 99, "卵も買う")
+
+    # --- 確認 ---
+    # 不正なインデックスなので False が返るはず
+    assert result is False
+
+    # 元の text は変わっていないはず
+    assert memos[0]["text"] == "牛乳を買う"
