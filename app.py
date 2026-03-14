@@ -96,6 +96,33 @@ def add_memo():
     else:
         print("空のメモは追加できません。")
 
+# 並び替え順をユーザーに選んでもらう関数
+def ask_sort_order():
+    """新しい順か古い順かをユーザーに選んでもらい、選択結果を返す関数"""
+    print("並び替え順を選んでください")
+    print("  1. 新しい順")
+    print("  2. 古い順")
+    order_input = input("選択 (1 or 2): ")
+
+    if order_input == "2":
+        return "old"
+    else:
+        # 1 以外が入力された場合も新しい順にする
+        return "new"
+
+# メモリストを作成日時で並び替えて返す関数
+def sort_memos_by_date(memo_list, order):
+    """メモのリストを日時順に並び替えた新しいリストを返す関数"""
+    # sorted() は元のリストを変えずに、並び替えた新しいリストを返す関数
+    # key には「何を基準に並び替えるか」を指定する
+    # lambda memo: memo["created_at"] は「各メモの created_at を基準にする」という意味
+    if order == "new":
+        # reverse=True にすると、大きい値（新しい日時）が先に来る
+        return sorted(memo_list, key=lambda memo: memo["created_at"], reverse=True)
+    else:
+        # reverse=False（デフォルト）にすると、小さい値（古い日時）が先に来る
+        return sorted(memo_list, key=lambda memo: memo["created_at"])
+
 # メモ一覧を表示する関数
 def show_memos():
     """保存されているメモの一覧を表示する関数"""
@@ -103,12 +130,16 @@ def show_memos():
     if len(memos) == 0:
         print("メモはまだありません。")
     else:
+        # 並び替え順をユーザーに選んでもらう
+        order = ask_sort_order()
+        # 選んだ順番でメモを並び替える（元の memos リストは変更しない）
+        sorted_list = sort_memos_by_date(memos, order)
+
         # メモがある場合、件数を表示してから番号を付けて表示
-        # len(memos)でメモの数を取得できる
-        print(f"\nメモは {len(memos)} 件あります")
+        print(f"\nメモは {len(sorted_list)} 件あります")
         print("--- メモ一覧 ---")
         # 各メモを番号と一緒に表示
-        for i, memo in enumerate(memos, start=1):
+        for i, memo in enumerate(sorted_list, start=1):
             # memo は辞書なので、キーを使って値を取り出す
             print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
         print("----------------\n")
@@ -209,10 +240,15 @@ def search_memos():
         # 1件もヒットしなかった場合
         print(f"「{keyword}」に一致するメモは見つかりませんでした。")
     else:
+        # 並び替え順をユーザーに選んでもらう
+        order = ask_sort_order()
+        # 選んだ順番で検索結果を並び替える
+        sorted_results = sort_memos_by_date(results, order)
+
         # ヒットした件数を表示してから、内容を表示する
-        print(f"\n「{keyword}」の検索結果: {len(results)} 件")
+        print(f"\n「{keyword}」の検索結果: {len(sorted_results)} 件")
         print("--- 検索結果 ---")
-        for i, memo in enumerate(results, start=1):
+        for i, memo in enumerate(sorted_results, start=1):
             print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
         print("----------------\n")
 
