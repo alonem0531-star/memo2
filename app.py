@@ -4,6 +4,9 @@
 # .env ファイルの内容を読み込むためのライブラリを使う
 import os
 
+# JSON ファイルを読み書きするためのライブラリを使う
+import json
+
 from dotenv import load_dotenv
 
 
@@ -17,40 +20,36 @@ app_name = os.getenv("APP_NAME", "メモ帳アプリ")
 # ただし、秘密の値なので画面には表示しない
 secret_word = os.getenv("SECRET_WORD")
 
-# メモを保存するファイル名
-memo_file = "memo.txt"
+# メモを保存するファイル名（JSON形式）
+memo_file = "memo.json"
 
 
 # メモを保存するためのリスト（空のリストで初期化）
 memos = []
 
-# memo.txt からメモを読み込む関数
+# memo.json からメモを読み込む関数
 def load_memos():
-    """保存済みのメモをファイルから読み込む関数"""
+    """保存済みのメモをJSONファイルから読み込む関数"""
     # 先に今のリストを空にして、同じ内容が二重に入らないようにする
     memos.clear()
-    # memo.txt がある場合だけ読み込む
+    # memo.json がある場合だけ読み込む
     if os.path.exists(memo_file):
-        # 1行ずつ読み込んで、改行だけを取り除く
+        # JSON ファイルを開いて、中身を Python のリストに変換する
         with open(memo_file, "r", encoding="utf-8") as file:
-            for line in file:
-                memos.append(line.rstrip("\n"))
+            # json.load() は JSON ファイルを読み込んでリストや辞書に変換する関数
+            data = json.load(file)
+            # 読み込んだデータをメモリスト（memos）に追加する
+            memos.extend(data)
 
-# メモを memo.txt に保存し直す関数
+# メモを memo.json に保存し直す関数
 def save_memos():
-    """今のメモ一覧をファイルに保存する関数"""
+    """今のメモ一覧をJSONファイルに保存する関数"""
     # "w" モードは、ファイルの内容を新しく書き直すときに使う
     with open(memo_file, "w", encoding="utf-8") as file:
-        # メモを1件ずつ1行にして保存する
-        for memo in memos:
-            file.write(memo + "\n")
-
-# 追加したメモを memo.txt に追記する関数
-def append_memo(memo_text):
-    """追加した1件のメモをファイルに追記する関数"""
-    # "a" モードは、今あるファイルの最後に内容を追加するときに使う
-    with open(memo_file, "a", encoding="utf-8") as file:
-        file.write(memo_text + "\n")
+        # json.dump() は Python のリストを JSON 形式に変換してファイルに書き込む関数
+        # ensure_ascii=False にすると、日本語がそのまま保存される
+        # indent=2 にすると、ファイルを開いたときに見やすく整形される
+        json.dump(memos, file, ensure_ascii=False, indent=2)
 
 # メニューを表示する関数
 def show_menu():
@@ -74,8 +73,8 @@ def add_memo():
     if memo_text.strip() != "":
         # メモリストに追加
         memos.append(memo_text)
-        # 追加したメモをファイルにも保存する
-        append_memo(memo_text)
+        # JSON はファイル全体を書き直す必要があるため、save_memos() で保存する
+        save_memos()
         print("メモを追加しました！")
     else:
         print("空のメモは追加できません。")
@@ -170,7 +169,7 @@ def main():
     """プログラムのメイン処理"""
     # .env から読み込んだアプリ名を、起動時に表示する
     print(f"{app_name} を起動しました。")
-    # 起動時に memo.txt があれば読み込む
+    # 起動時に memo.json があれば読み込む
     load_memos()
     
     # 無限ループ（ユーザーが終了を選ぶまで繰り返す）
