@@ -73,24 +73,25 @@ def show_menu():
     print("7. 終了")
     print("=============\n")
 
+# テキストからメモの辞書を作る関数（データ処理）
+def make_memo(text):
+    """テキストから新しいメモの辞書を作って返す関数"""
+    return {
+        "text": text,
+        # datetime.now() で現在日時を取得し、strftime() で見やすい形式の文字列に変換する
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
 # メモを追加する関数
 def add_memo():
     """新しいメモを追加する関数"""
     # ユーザーからメモの内容を入力してもらう
     memo_text = input("メモを入力してください: ")
-    
+
     # 入力されたメモが空でない場合のみ追加
     if memo_text.strip() != "":
-        # メモを辞書形式で作る
-        # 辞書とは、キーと値のペアでデータを管理するPythonのデータ構造
-        # 例: {"text": "買い物", "created_at": "2024-01-01 12:00:00"}
-        memo = {
-            "text": memo_text,
-            # datetime.now() で現在日時を取得し、strftime() で見やすい形式の文字列に変換する
-            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        # メモリストに辞書を追加
-        memos.append(memo)
+        # make_memo() でメモの辞書を作り、リストに追加する
+        memos.append(make_memo(memo_text))
         # JSON はファイル全体を書き直す必要があるため、save_memos() で保存する
         save_memos()
         print("メモを追加しました！")
@@ -124,6 +125,12 @@ def sort_memos_by_date(memo_list, order):
         # reverse=False（デフォルト）にすると、小さい値（古い日時）が先に来る
         return sorted(memo_list, key=lambda memo: memo["created_at"])
 
+# メモのリストを番号付きで表示する関数（CLI処理）
+def print_memo_list(memo_list):
+    """メモのリストを番号付きで画面に表示する関数"""
+    for i, memo in enumerate(memo_list, start=1):
+        print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
+
 # メモ一覧を表示する関数
 def show_memos():
     """保存されているメモの一覧を表示する関数"""
@@ -139,10 +146,7 @@ def show_memos():
         # メモがある場合、件数を表示してから番号を付けて表示
         print(f"\nメモは {len(sorted_list)} 件あります")
         print("--- メモ一覧 ---")
-        # 各メモを番号と一緒に表示
-        for i, memo in enumerate(sorted_list, start=1):
-            # memo は辞書なので、キーを使って値を取り出す
-            print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
+        print_memo_list(sorted_list)
         print("----------------\n")
 
 # 文字列の入力をメモの番号（整数）に変換する関数
@@ -191,10 +195,7 @@ def handle_delete():
 
     # メモ一覧を表示して、どのメモを削除するか選んでもらう
     print("\n--- 削除するメモを選んでください ---")
-    # 各メモを番号と一緒に表示
-    for i, memo in enumerate(memos, start=1):
-        # memo は辞書なので、キーを使って値を取り出す
-        print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
+    print_memo_list(memos)
     print("------------------------------------\n")
 
     # 正しい番号が入力されるまで繰り返す
@@ -267,9 +268,7 @@ def handle_edit():
 
     # メモ一覧を表示して、どのメモを編集するか選んでもらう
     print("\n--- 編集するメモを選んでください ---")
-    # 各メモを番号と一緒に表示
-    for i, memo in enumerate(memos, start=1):
-        print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
+    print_memo_list(memos)
     print("------------------------------------\n")
 
     # 正しい番号が入力されるまで繰り返す
