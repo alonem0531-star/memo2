@@ -271,17 +271,9 @@ def edit_memo():
     print("メモを更新しました！")
 
 
-# メモを検索する関数
-def search_memos():
-    """キーワードを含むメモを検索して表示する関数"""
-    # ユーザーから検索キーワードを入力してもらう
-    keyword = input("検索キーワードを入力してください: ")
-
-    # 空のキーワードは検索しない
-    if keyword.strip() == "":
-        print("キーワードを入力してください。")
-        return
-
+# キーワードを含むメモだけを返す関数
+def search_memos(memos, keyword):
+    """memos の中から keyword を含むメモだけを返す関数"""
     # キーワードを含むメモだけを集めるリスト（最初は空）
     results = []
 
@@ -291,6 +283,23 @@ def search_memos():
         # 例: "買い物" in "牛乳を買い物リストに追加" → True
         if keyword in memo["text"]:
             results.append(memo)
+
+    return results
+
+
+# メモを検索する関数（CLI操作を担当）
+def handle_search():
+    """キーワードを入力してもらい、検索結果を表示する関数"""
+    # ユーザーから検索キーワードを入力してもらう
+    keyword = input("検索キーワードを入力してください: ")
+
+    # 空のキーワードは検索しない
+    if keyword.strip() == "":
+        print("キーワードを入力してください。")
+        return
+
+    # search_memos() を使って、キーワードに一致するメモを取得する
+    results = search_memos(memos, keyword)
 
     # 検索結果を表示する
     if len(results) == 0:
@@ -341,7 +350,7 @@ def main():
             clear_memos()
         elif choice == "5":
             # 5が選ばれた場合：メモを検索
-            search_memos()
+            handle_search()
         elif choice == "6":
             # 6が選ばれた場合：メモを編集
             edit_memo()
