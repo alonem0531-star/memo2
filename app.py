@@ -36,8 +36,10 @@ def show_memos():
     if len(memos) == 0:
         print("メモはまだありません。")
     else:
-        # メモがある場合、番号を付けて表示
-        print("\n--- メモ一覧 ---")
+        # メモがある場合、件数を表示してから番号を付けて表示
+        # len(memos)でメモの数を取得できる
+        print(f"\nメモは {len(memos)} 件あります")
+        print("--- メモ一覧 ---")
         # 各メモを番号と一緒に表示
         for i, memo in enumerate(memos, start=1):
             print(f"{i}. {memo}")
