@@ -254,6 +254,33 @@ def test_edit_memo_returns_false_for_invalid_index():
     assert memos[0]["text"] == "牛乳を買う"
 
 
+def test_parse_memo_number_valid():
+    """有効な番号の文字列を渡したとき、整数に変換されて返るかを確認するテスト"""
+
+    # count=3 のとき、"1"〜"3" はすべて有効な番号のはず
+    assert app.parse_memo_number("1", 3) == 1
+    assert app.parse_memo_number("2", 3) == 2
+    assert app.parse_memo_number("3", 3) == 3
+
+
+def test_parse_memo_number_not_a_digit():
+    """数字以外の文字列を渡したとき、None が返るかを確認するテスト"""
+
+    # 文字列や空文字は数字ではないので None が返るはず
+    assert app.parse_memo_number("abc", 3) is None
+    assert app.parse_memo_number("",    3) is None
+    assert app.parse_memo_number("！",  3) is None
+
+
+def test_parse_memo_number_out_of_range():
+    """範囲外の番号を渡したとき、None が返るかを確認するテスト"""
+
+    # 0 以下、または count より大きい番号は範囲外なので None が返るはず
+    assert app.parse_memo_number("0",  3) is None  # 小さすぎる
+    assert app.parse_memo_number("4",  3) is None  # 大きすぎる
+    assert app.parse_memo_number("99", 3) is None  # 大きすぎる
+
+
 def test_sort_memos_by_date_new_order():
     """new（新しい順）を指定したとき、created_at の降順に並ぶかを確認するテスト"""
 

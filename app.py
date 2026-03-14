@@ -145,6 +145,27 @@ def show_memos():
             print(f"{i}. {memo['text']}  （作成日時: {memo['created_at']}）")
         print("----------------\n")
 
+# 文字列の入力をメモの番号（整数）に変換する関数
+def parse_memo_number(text, count):
+    """入力文字列 text を 1〜count の範囲の整数に変換する関数。
+    有効な番号なら整数を返す、数字でない・範囲外なら None を返す。"""
+
+    # isdigit() で数字だけで構成された文字列かどうかを確認する
+    # 例: "3".isdigit() → True、"abc".isdigit() → False
+    if not text.isdigit():
+        return None
+
+    # 文字列を整数に変換する
+    number = int(text)
+
+    # 1 以上、メモの件数以下かどうかを確認する
+    if number < 1 or number > count:
+        return None
+
+    # 有効な番号なのでそのまま返す
+    return number
+
+
 # 指定した位置のメモを削除する関数
 def delete_memo(memos, index):
     """memos の index 番目のメモを削除する関数。
@@ -181,20 +202,10 @@ def handle_delete():
         # ユーザーから削除したいメモの番号を入力してもらう
         number_input = input("削除するメモの番号を入力してください: ")
 
-        # 入力が数字かどうかを確認
-        # isdigit()は文字列が数字のみで構成されているかチェックする関数
-        if not number_input.isdigit():
-            # 数字でない場合、再入力を促す
-            print("数字を入力してください。")
-            continue
-
-        # 文字列を整数に変換
-        number = int(number_input)
-
-        # 番号が有効な範囲内かどうかを確認
-        # 番号は1以上、メモの数以下でなければならない
-        if number < 1 or number > len(memos):
-            # 範囲外の番号の場合、再入力を促す
+        # parse_memo_number() で入力を検証する
+        # 数字でない・範囲外のときは None が返る
+        number = parse_memo_number(number_input, len(memos))
+        if number is None:
             print(f"1から{len(memos)}までの番号を入力してください。")
             continue
 
@@ -266,16 +277,10 @@ def handle_edit():
         # ユーザーから編集したいメモの番号を入力してもらう
         number_input = input("編集するメモの番号を入力してください: ")
 
-        # 入力が数字かどうかを確認
-        if not number_input.isdigit():
-            print("数字を入力してください。")
-            continue
-
-        # 文字列を整数に変換
-        number = int(number_input)
-
-        # 番号が有効な範囲内かどうかを確認
-        if number < 1 or number > len(memos):
+        # parse_memo_number() で入力を検証する
+        # 数字でない・範囲外のときは None が返る
+        number = parse_memo_number(number_input, len(memos))
+        if number is None:
             print(f"1から{len(memos)}までの番号を入力してください。")
             continue
 
