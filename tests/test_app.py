@@ -196,3 +196,67 @@ def test_edit_memo_returns_false_for_invalid_index():
 
     # 元の text は変わっていないはず
     assert memos[0]["text"] == "牛乳を買う"
+
+
+def test_sort_memos_by_date_new_order():
+    """new（新しい順）を指定したとき、created_at の降順に並ぶかを確認するテスト"""
+
+    # --- テストデータの準備 ---
+    # あえて古い順に並べておく（並び替え前後の違いが分かるようにするため）
+    memos = [
+        {"text": "一番古いメモ", "created_at": "2026-01-01 10:00:00"},
+        {"text": "真ん中のメモ", "created_at": "2026-01-02 10:00:00"},
+        {"text": "一番新しいメモ", "created_at": "2026-01-03 10:00:00"},
+    ]
+
+    # --- 実行 ---
+    # "new"（新しい順）で並び替える
+    result = app.sort_memos_by_date(memos, "new")
+
+    # --- 確認 ---
+    # 新しい順なので、一番新しいメモが先頭に来るはず
+    assert result[0]["text"] == "一番新しいメモ"
+    assert result[1]["text"] == "真ん中のメモ"
+    assert result[2]["text"] == "一番古いメモ"
+
+
+def test_sort_memos_by_date_old_order():
+    """old（古い順）を指定したとき、created_at の昇順に並ぶかを確認するテスト"""
+
+    # --- テストデータの準備 ---
+    # あえて新しい順に並べておく（並び替え前後の違いが分かるようにするため）
+    memos = [
+        {"text": "一番新しいメモ", "created_at": "2026-01-03 10:00:00"},
+        {"text": "真ん中のメモ",   "created_at": "2026-01-02 10:00:00"},
+        {"text": "一番古いメモ",   "created_at": "2026-01-01 10:00:00"},
+    ]
+
+    # --- 実行 ---
+    # "old"（古い順）で並び替える
+    result = app.sort_memos_by_date(memos, "old")
+
+    # --- 確認 ---
+    # 古い順なので、一番古いメモが先頭に来るはず
+    assert result[0]["text"] == "一番古いメモ"
+    assert result[1]["text"] == "真ん中のメモ"
+    assert result[2]["text"] == "一番新しいメモ"
+
+
+def test_sort_memos_by_date_does_not_change_original():
+    """並び替えをしても、元のリストの順番が変わらないことを確認するテスト"""
+
+    # --- テストデータの準備 ---
+    memos = [
+        {"text": "一番古いメモ",   "created_at": "2026-01-01 10:00:00"},
+        {"text": "一番新しいメモ", "created_at": "2026-01-03 10:00:00"},
+    ]
+
+    # --- 実行 ---
+    # 新しい順で並び替える
+    app.sort_memos_by_date(memos, "new")
+
+    # --- 確認 ---
+    # 元のリスト（memos）の順番は変わっていないはず
+    # sort_memos_by_date は sorted() を使うので、元のリストを変更しない
+    assert memos[0]["text"] == "一番古いメモ"
+    assert memos[1]["text"] == "一番新しいメモ"
