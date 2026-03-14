@@ -4,9 +4,6 @@
 # .env ファイルの内容を読み込むためのライブラリを使う
 import os
 
-# JSON ファイルを読み書きするためのライブラリを使う
-import json
-
 from dotenv import load_dotenv
 
 # memo_logic.py からメモのデータ処理関数を読み込む
@@ -18,6 +15,8 @@ from memo_logic import (
     delete_memo,
     edit_memo,
     search_memos,
+    load_memos,
+    save_memos,
 )
 
 
@@ -37,41 +36,6 @@ memo_file = "memo.json"
 
 # メモを保存するためのリスト（空のリストで初期化）
 memos = []
-
-# memo.json からメモを読み込む関数
-def load_memos():
-    """保存済みのメモをJSONファイルから読み込む関数"""
-    # 先に今のリストを空にして、同じ内容が二重に入らないようにする
-    memos.clear()
-    # memo.json がある場合だけ読み込む
-    if os.path.exists(memo_file):
-        # JSON ファイルを開いて、中身を Python のリストに変換する
-        with open(memo_file, "r", encoding="utf-8") as file:
-            try:
-                # json.load() は JSON ファイルを読み込んでリストや辞書に変換する関数
-                data = json.load(file)
-            except json.JSONDecodeError:
-                # ファイルの中身が壊れていて JSON として読めない場合
-                # エラーを表示して、メモを空のまま起動する
-                print("memo.json が壊れているため、メモを読み込めませんでした。")
-                return
-            # 読み込んだデータをメモリスト（memos）に追加する
-            for item in data:
-                # 古い形式（文字列）のメモが残っている場合、辞書形式に変換して読み込む
-                if isinstance(item, str):
-                    memos.append({"text": item, "created_at": "不明"})
-                else:
-                    memos.append(item)
-
-# メモを memo.json に保存し直す関数
-def save_memos():
-    """今のメモ一覧をJSONファイルに保存する関数"""
-    # "w" モードは、ファイルの内容を新しく書き直すときに使う
-    with open(memo_file, "w", encoding="utf-8") as file:
-        # json.dump() は Python のリストを JSON 形式に変換してファイルに書き込む関数
-        # ensure_ascii=False にすると、日本語がそのまま保存される
-        # indent=2 にすると、ファイルを開いたときに見やすく整形される
-        json.dump(memos, file, ensure_ascii=False, indent=2)
 
 # メニューを表示する関数
 def show_menu():
@@ -111,8 +75,8 @@ def add_memo():
     if memo_text.strip() != "":
         # make_memo() でメモの辞書を作り、リストに追加する
         memos.append(make_memo(memo_text))
-        # JSON はファイル全体を書き直す必要があるため、save_memos() で保存する
-        save_memos()
+        # JSON はファイル全体を書き直す必要があるため、save_memos(memos, memo_file) で保存する
+        save_memos(memos, memo_file)
         print("メモを追加しました！")
     else:
         print("空のメモは追加できません。")
@@ -184,7 +148,7 @@ def handle_delete():
         # delete_memo() を使ってメモを削除する（number - 1 でインデックスに変換）
         deleted_memo = delete_memo(memos, number - 1)
         # 削除後の状態を、そのままファイルに保存し直す
-        save_memos()
+        save_memos(memos, memo_file)
         print(f"メモ「{deleted_memo['text']}」を削除しました。")
         # 正しい番号が入力されたので、ループを抜ける
         break
@@ -205,7 +169,7 @@ def clear_memos():
         # clear()はリストの中身をすべて空にするメソッド
         memos.clear()
         # 全削除した結果をファイルにも反映する
-        save_memos()
+        save_memos(memos, memo_file)
         print("すべてのメモを削除しました。")
     else:
         # "y" 以外（"n" など）が入力された場合はキャンセル
@@ -256,7 +220,7 @@ def handle_edit():
     edit_memo(memos, number - 1, new_text)
 
     # 更新した内容をファイルに保存する
-    save_memos()
+    save_memos(memos, memo_file)
     print("メモを更新しました！")
 
 
@@ -297,8 +261,9 @@ def main():
     """プログラムのメイン処理"""
     # .env から読み込んだアプリ名を、起動時に表示する
     print(f"{app_name} を起動しました。")
-    # 起動時に memo.json があれば読み込む
-    load_memos()
+    # 起動時に memo.json があれば読み込む（返ってきたリストをグローバル変数に代入する）
+    global memos
+    memos = load_memos(memo_file)
     
     # 無限ループ（ユーザーが終了を選ぶまで繰り返す）
     while True:

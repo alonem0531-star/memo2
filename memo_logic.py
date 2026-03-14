@@ -5,6 +5,12 @@
 # 現在日時を取得するためのライブラリを使う
 from datetime import datetime
 
+# ファイルの存在確認に使う
+import os
+
+# JSON ファイルの読み書きに使う
+import json
+
 
 # テキストからメモの辞書を作る関数
 def make_memo(text):
@@ -96,3 +102,39 @@ def search_memos(memos, keyword):
             results.append(memo)
 
     return results
+
+
+# memo.json からメモを読み込む関数
+def load_memos(memo_file):
+    """保存済みのメモをJSONファイルから読み込んで、リストで返す関数"""
+    memos = []
+    # memo.json がある場合だけ読み込む
+    if os.path.exists(memo_file):
+        # JSON ファイルを開いて、中身を Python のリストに変換する
+        with open(memo_file, "r", encoding="utf-8") as file:
+            try:
+                # json.load() は JSON ファイルを読み込んでリストや辞書に変換する関数
+                data = json.load(file)
+            except json.JSONDecodeError:
+                # ファイルの中身が壊れていて JSON として読めない場合
+                print("memo.json が壊れているため、メモを読み込めませんでした。")
+                return memos
+            # 読み込んだデータをリストに追加する
+            for item in data:
+                # 古い形式（文字列）のメモが残っている場合、辞書形式に変換して読み込む
+                if isinstance(item, str):
+                    memos.append({"text": item, "created_at": "不明"})
+                else:
+                    memos.append(item)
+    return memos
+
+
+# メモを memo.json に保存し直す関数
+def save_memos(memos, memo_file):
+    """今のメモ一覧をJSONファイルに保存する関数"""
+    # "w" モードは、ファイルの内容を新しく書き直すときに使う
+    with open(memo_file, "w", encoding="utf-8") as file:
+        # json.dump() は Python のリストを JSON 形式に変換してファイルに書き込む関数
+        # ensure_ascii=False にすると、日本語がそのまま保存される
+        # indent=2 にすると、ファイルを開いたときに見やすく整形される
+        json.dump(memos, file, ensure_ascii=False, indent=2)

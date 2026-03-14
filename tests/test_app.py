@@ -13,82 +13,66 @@ def test_save_and_load_memos(tmp_path):
     """メモを保存して、読み込んだら同じ内容が戻るかを確認するテスト"""
 
     # --- 準備 ---
-    # テスト用の一時ファイルパスを作る（例: C:\Temp\pytest-xxx\memo.json）
-    temp_file = tmp_path / "memo.json"
-
-    # app.py が使うファイルパスを、一時ファイルに差し替える
-    # こうすることで、本物の memo.json を書き換えずにテストできる
-    app.memo_file = str(temp_file)
-
-    # app.py が使うメモリストを空にする（他のテストの影響を受けないようにするため）
-    app.memos.clear()
+    # テスト用の一時ファイルパスを文字列で作る（例: C:\Temp\pytest-xxx\memo.json）
+    # str() に変換するのは、save_memos / load_memos が文字列パスを期待しているため
+    temp_file = str(tmp_path / "memo.json")
 
     # --- テストデータの準備 ---
-    # 保存するメモを辞書形式で作る（app.py と同じ形式）
-    test_memo = {
-        "text": "テスト用のメモ",
-        "created_at": "2026-01-01 12:00:00"
-    }
-
-    # メモをリストに追加する
-    app.memos.append(test_memo)
+    # 保存するメモをローカルのリストとして用意する
+    memos = [{"text": "テスト用のメモ", "created_at": "2026-01-01 12:00:00"}]
 
     # --- 実行 ---
-    # メモをファイルに保存する
-    app.save_memos()
+    # memos と保存先ファイルを引数で渡して保存する
+    app.save_memos(memos, temp_file)
 
-    # メモリストを空にして、「ファイルから読み込む前の状態」を再現する
-    app.memos.clear()
-
-    # ファイルからメモを読み込む
-    app.load_memos()
+    # ファイルから読み込んで、返ってきたリストを受け取る
+    loaded = app.load_memos(temp_file)
 
     # --- 確認 ---
     # メモが1件だけ読み込まれているか確認する
-    assert len(app.memos) == 1
+    assert len(loaded) == 1
 
     # 読み込まれたメモの内容が、保存したものと一致するか確認する
-    assert app.memos[0]["text"] == "テスト用のメモ"
-    assert app.memos[0]["created_at"] == "2026-01-01 12:00:00"
+    assert loaded[0]["text"] == "テスト用のメモ"
+    assert loaded[0]["created_at"] == "2026-01-01 12:00:00"
 
 
 def test_save_and_load_multiple_memos(tmp_path):
     """複数のメモを保存して、すべて正しく読み込まれるかを確認するテスト"""
 
     # --- 準備 ---
-    # 一時ファイルに差し替えて、本物の memo.json を書き換えないようにする
-    app.memo_file = str(tmp_path / "memo.json")
-    app.memos.clear()
+    temp_file = str(tmp_path / "memo.json")
 
     # --- テストデータの準備 ---
-    # 複数のメモを用意する
-    app.memos.append({"text": "牛乳を買う",       "created_at": "2026-01-01 10:00:00"})
-    app.memos.append({"text": "図書館に本を返す", "created_at": "2026-01-02 11:00:00"})
-    app.memos.append({"text": "運動する",         "created_at": "2026-01-03 12:00:00"})
+    # 複数のメモをローカルのリストとして用意する
+    memos = [
+        {"text": "牛乳を買う",       "created_at": "2026-01-01 10:00:00"},
+        {"text": "図書館に本を返す", "created_at": "2026-01-02 11:00:00"},
+        {"text": "運動する",         "created_at": "2026-01-03 12:00:00"},
+    ]
 
     # --- 実行 ---
     # 3件まとめて保存する
-    app.save_memos()
+    app.save_memos(memos, temp_file)
 
-    # いったん空にしてからファイルを読み込む
-    app.memos.clear()
-    app.load_memos()
+    # ファイルから読み込んで、返ってきたリストを受け取る
+    loaded = app.load_memos(temp_file)
 
     # --- 確認 ---
     # 3件すべて読み込まれているはず
-    assert len(app.memos) == 3
+    assert len(loaded) == 3
 
     # 1件目：text と created_at の両方を確認する
-    assert app.memos[0]["text"] == "牛乳を買う"
-    assert app.memos[0]["created_at"] == "2026-01-01 10:00:00"
+    assert loaded[0]["text"] == "牛乳を買う"
+    assert loaded[0]["created_at"] == "2026-01-01 10:00:00"
 
     # 2件目
-    assert app.memos[1]["text"] == "図書館に本を返す"
-    assert app.memos[1]["created_at"] == "2026-01-02 11:00:00"
+    assert loaded[1]["text"] == "図書館に本を返す"
+    assert loaded[1]["created_at"] == "2026-01-02 11:00:00"
 
     # 3件目
-    assert app.memos[2]["text"] == "運動する"
-    assert app.memos[2]["created_at"] == "2026-01-03 12:00:00"
+    assert loaded[2]["text"] == "運動する"
+    assert loaded[2]["created_at"] == "2026-01-03 12:00:00"
 
 
 def test_load_memos_with_broken_json(tmp_path):
@@ -100,34 +84,26 @@ def test_load_memos_with_broken_json(tmp_path):
     broken_file = tmp_path / "memo.json"
     broken_file.write_text("{ これは壊れた JSON です ", encoding="utf-8")
 
-    # app.py が使うファイルパスを、壊れたファイルに差し替える
-    app.memo_file = str(broken_file)
-    app.memos.clear()
-
     # --- 実行 ---
     # 壊れたファイルを読み込もうとする（エラーで落ちないはず）
-    app.load_memos()
+    result = app.load_memos(str(broken_file))
 
     # --- 確認 ---
-    # 読み込みに失敗しても、メモは空のリストのままのはず
-    assert len(app.memos) == 0
+    # 読み込みに失敗しても、空のリストが返ってくるはず
+    assert len(result) == 0
 
 
 def test_load_memos_when_file_does_not_exist(tmp_path):
     """memo.json がない状態で load_memos() を呼んでも、エラーにならないことを確認するテスト"""
 
-    # --- 準備 ---
-    # 存在しないファイルパスを指定する（tmp_path にはまだファイルを作っていない）
-    app.memo_file = str(tmp_path / "memo.json")
-    app.memos.clear()
-
     # --- 実行 ---
+    # tmp_path にはまだファイルを作っていないので、存在しないパスを渡している
     # ファイルがなくても load_memos() がエラーなく終わるはず
-    app.load_memos()
+    result = app.load_memos(str(tmp_path / "memo.json"))
 
     # --- 確認 ---
-    # ファイルがないのでメモは0件のまま
-    assert len(app.memos) == 0
+    # ファイルがないので、空のリストが返ってくるはず
+    assert len(result) == 0
 
 
 def test_search_memos_returns_matching():
