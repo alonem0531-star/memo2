@@ -17,9 +17,40 @@ app_name = os.getenv("APP_NAME", "メモ帳アプリ")
 # ただし、秘密の値なので画面には表示しない
 secret_word = os.getenv("SECRET_WORD")
 
+# メモを保存するファイル名
+memo_file = "memo.txt"
+
 
 # メモを保存するためのリスト（空のリストで初期化）
 memos = []
+
+# memo.txt からメモを読み込む関数
+def load_memos():
+    """保存済みのメモをファイルから読み込む関数"""
+    # 先に今のリストを空にして、同じ内容が二重に入らないようにする
+    memos.clear()
+    # memo.txt がある場合だけ読み込む
+    if os.path.exists(memo_file):
+        # 1行ずつ読み込んで、改行だけを取り除く
+        with open(memo_file, "r", encoding="utf-8") as file:
+            for line in file:
+                memos.append(line.rstrip("\n"))
+
+# メモを memo.txt に保存し直す関数
+def save_memos():
+    """今のメモ一覧をファイルに保存する関数"""
+    # "w" モードは、ファイルの内容を新しく書き直すときに使う
+    with open(memo_file, "w", encoding="utf-8") as file:
+        # メモを1件ずつ1行にして保存する
+        for memo in memos:
+            file.write(memo + "\n")
+
+# 追加したメモを memo.txt に追記する関数
+def append_memo(memo_text):
+    """追加した1件のメモをファイルに追記する関数"""
+    # "a" モードは、今あるファイルの最後に内容を追加するときに使う
+    with open(memo_file, "a", encoding="utf-8") as file:
+        file.write(memo_text + "\n")
 
 # メニューを表示する関数
 def show_menu():
@@ -43,6 +74,8 @@ def add_memo():
     if memo_text.strip() != "":
         # メモリストに追加
         memos.append(memo_text)
+        # 追加したメモをファイルにも保存する
+        append_memo(memo_text)
         print("メモを追加しました！")
     else:
         print("空のメモは追加できません。")
@@ -103,6 +136,8 @@ def delete_memo():
         # 有効な番号が入力された場合
         # リストのインデックスは0から始まるので、番号から1を引く
         deleted_memo = memos.pop(number - 1)
+        # 削除後の状態を、そのままファイルに保存し直す
+        save_memos()
         print(f"メモ「{deleted_memo}」を削除しました。")
         # 正しい番号が入力されたので、ループを抜ける
         break
@@ -122,6 +157,8 @@ def delete_all_memos():
     if confirm == "y":
         # clear()はリストの中身をすべて空にするメソッド
         memos.clear()
+        # 全削除した結果をファイルにも反映する
+        save_memos()
         print("すべてのメモを削除しました。")
     else:
         # "y" 以外（"n" など）が入力された場合はキャンセル
@@ -133,6 +170,8 @@ def main():
     """プログラムのメイン処理"""
     # .env から読み込んだアプリ名を、起動時に表示する
     print(f"{app_name} を起動しました。")
+    # 起動時に memo.txt があれば読み込む
+    load_memos()
     
     # 無限ループ（ユーザーが終了を選ぶまで繰り返す）
     while True:
